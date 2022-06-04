@@ -1,19 +1,18 @@
+import { HudScene } from "../scenes/HudScene";
+
 export class PopUPEnding extends Phaser.GameObjects.Container{
-    private highScore:number;
-    private score:number;
     private newGameButton:Phaser.GameObjects.Image;
+    public scene:HudScene;
 
     constructor(scene:Phaser.Scene,x:number,y:number, highScore:number,score:number) {
         super(scene,x,y);
-        this.highScore = highScore;
-        this.score = score;
     }
 
     public getButton(): Phaser.GameObjects.Image {
         return this.newGameButton;
     }
 
-    public setUpButton(onCompleteFunction:Function) {
+    public setUpButton() {
         this.newGameButton.setInteractive();
         this.newGameButton.on('pointerdown', () => {
             this.scene.tweens.add({
@@ -22,7 +21,21 @@ export class PopUPEnding extends Phaser.GameObjects.Container{
                 ease:'Power1',
                 duration: 200,
                 yoyo:true,
-                onComplete:onCompleteFunction
+                onComplete:() => {
+                    this.scene.newGame();
+                    this.scene.tweens.add({
+                        targets:this,
+                        scale: 0,
+                        duration: 300,
+                        ease:'Power1',
+                        onComplete: () => {
+                            this.scene.pausePopUp.alpha = 1;
+                            this.scene.pausePopUp.getButton().setInteractive();
+                            this.scene.checkGameScene = true;
+                            this.close();
+                        }
+                    });
+                }
             })
         });
     }
@@ -32,8 +45,8 @@ export class PopUPEnding extends Phaser.GameObjects.Container{
         let containerElements = this.scene.add.image(0,0,'container');
         this.newGameButton = this.scene.add.image(0,0,'containerButton');
         let newGameText = this.scene.add.bitmapText(0,0,'font','New Game',40);
-        let highScoreText = this.scene.add.text(0,0,'High Score: '+ this.highScore.toString());
-        let scoreText = this.scene.add.text(0,0,'Score: '+ this.score.toString());
+        let highScoreText = this.scene.add.text(0,0,'High Score: '+ this.scene.highScore.toString());
+        let scoreText = this.scene.add.text(0,0,'Score: '+ this.scene.currentScore.toString());
         this.newGameButton.scale = 0.6;
         newGameText.scale = 0.5;
         this.add(zone);
@@ -46,11 +59,23 @@ export class PopUPEnding extends Phaser.GameObjects.Container{
         Phaser.Display.Align.To.BottomCenter(scoreText,highScoreText,0,10);
         Phaser.Display.Align.To.BottomCenter(this.newGameButton,scoreText);
         Phaser.Display.Align.In.Center(newGameText,this.newGameButton);
+        this.setUpButton();
+        this.close();
+    }
+
+    public close() {
+        this.setVisible(false);
+    }
+
+    public open() {
+        this.setVisible(true);
         this.scene.tweens.add({
             targets:this,
             scale: 2,
             duration: 800,
             ease:'bounce'
         });
+        this.scene.pausePopUp.alpha = 0.8;
+        this.scene.pausePopUp.getButton().removeInteractive();
     }
 }

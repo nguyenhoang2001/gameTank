@@ -20,7 +20,7 @@ export class SettingPopUp extends Phaser.GameObjects.Container {
         return this.soundButton;
     }
 
-    public setUpRestartButton(onCompleteFunction:Function) {
+    public setUpRestartButton() {
         this.restartButton.setInteractive();
         this.restartButton.on('pointerdown',() => {
             this.scene.tweens.add({
@@ -29,12 +29,25 @@ export class SettingPopUp extends Phaser.GameObjects.Container {
                 ease:'Power1',
                 duration: 200,
                 yoyo:true,
-                onComplete:this.scene.pauseGame()
+                onComplete:() => {
+                    this.scene.resumeGame();
+                    this.scene.tweens.add({
+                        targets:this,
+                        scale: 0,
+                        duration: 300,
+                        ease:'Power1',
+                        onComplete: () => {
+                            this.scene.pausePopUp.alpha = 1;
+                            this.scene.pausePopUp.getButton().setInteractive();
+                            this.close();
+                        }
+                    });
+                }
             })
         });
     }
 
-    public setUpNewGameButton(onCompleteFunction:Function) {
+    public setUpNewGameButton() {
         this.newGameButton.setInteractive();
         this.newGameButton.on('pointerdown', () => {
             this.scene.tweens.add({
@@ -43,12 +56,25 @@ export class SettingPopUp extends Phaser.GameObjects.Container {
                 ease:'Power1',
                 duration: 200,
                 yoyo:true,
-                onComplete:onCompleteFunction
+                onComplete:() => {
+                    this.scene.newGame();
+                    this.scene.tweens.add({
+                        targets:this,
+                        scale: 0,
+                        duration: 300,
+                        ease:'Power1',
+                        onComplete: () => {
+                            this.scene.pausePopUp.alpha = 1;
+                            this.scene.pausePopUp.getButton().setInteractive();
+                            this.close();
+                        }
+                    });
+                }
             })
         });
     }
 
-    public setUpSoundButton(onCompleteFunction:Function) {
+    public setUpSoundButton() {
         this.soundButton.setInteractive();
         this.soundButton.on('pointerdown',()=> {
             this.scene.tweens.add({
@@ -57,7 +83,21 @@ export class SettingPopUp extends Phaser.GameObjects.Container {
                 ease:'Power1',
                 duration: 200,
                 yoyo:true,
-                onComplete:onCompleteFunction
+                onComplete:() => {
+                    this.scene.turnOnOffSound();
+                    this.scene.resumeGame();
+                    this.scene.tweens.add({
+                        targets:this,
+                        scale: 0,
+                        duration: 300,
+                        ease:'Power1',
+                        onComplete: () => {
+                            this.scene.pausePopUp.alpha = 1;
+                            this.scene.pausePopUp.getButton().setInteractive();
+                            this.close();
+                        }
+                    });
+                }
             })
         })
     }
@@ -91,9 +131,18 @@ export class SettingPopUp extends Phaser.GameObjects.Container {
         Phaser.Display.Align.In.Center(newGameText,this.newGameButton);
         Phaser.Display.Align.To.BottomCenter(this.soundButton,this.newGameButton);
         Phaser.Display.Align.In.Center(soundText,this.soundButton);
+        this.close();
+        this.setUpRestartButton();
+        this.setUpNewGameButton();
+        this.setUpSoundButton();
+    }
+
+    public close() {
+        this.setVisible(false);
     }
 
     public open() {
+        this.setVisible(true);
         this.scene.tweens.add({
             targets:this,
             scale: 2,

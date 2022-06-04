@@ -5,14 +5,13 @@ export class PausePopUp extends Phaser.GameObjects.Container {
     private containerButton: Phaser.GameObjects.Image;
     constructor(scene:HudScene,x:number,y:number) {
         super(scene,x,y);
-        this.scene.pauseGame
     }
 
     public getButton():Phaser.GameObjects.Image {
         return this.containerButton;
     }
 
-    public setUpButton(onCompleteFunction:Function, pointerUpFunction:Function) {
+    public setUpButton() {
         this.containerButton.setInteractive();
         this.containerButton.on('pointerdown',() => {
             this.scene.tweens.add({
@@ -21,10 +20,16 @@ export class PausePopUp extends Phaser.GameObjects.Container {
                 ease:'Power1',
                 duration: 200,
                 yoyo:true,
-                onComplete:onCompleteFunction
+                onComplete:()=>{
+                    this.scene.pauseGame();
+                    this.scene.createSettingContainer();
+                }
             })
         });
-        this.containerButton.on('pointerup',pointerUpFunction);
+        this.containerButton.on('pointerup',()=>{            
+            this.scene.pausePopUp.alpha = 0.8;
+            this.scene.pausePopUp.getButton().removeInteractive();
+        });
     }
     
     public start() {
@@ -38,6 +43,16 @@ export class PausePopUp extends Phaser.GameObjects.Container {
         Phaser.Display.Align.In.TopRight(this.containerButton,mainZone, -10, -20);
         Phaser.Display.Align.In.Center(text,this.containerButton);
         this.scale = 0.4;
+        this.close();
+        this.setUpButton();
+    }
+
+    public close() {
+        this.setVisible(false);
+    }
+
+    public open() {
+        this.setVisible(true);
         this.scene.tweens.add({
             targets:this,
             scale: 1,
